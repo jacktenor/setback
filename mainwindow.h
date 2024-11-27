@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QString>
 #include <QLabel>  // This fixes the QLabel error by including the necessary header
+#include "qfiledialog.h"
 #include "readmedialog.h"  // Include the header for the readme dialog
 
 QT_BEGIN_NAMESPACE
@@ -31,6 +32,9 @@ private:
     QString imagePath;              // Holds the selected image path
     void createUserContentCss(const QString &profilePath, const QString &imagePath);
     void updateImagePreview(const QString &imagePath);  // Method to update the QLabel with the selected image
+    void savePlacesForProfileDialog(const QList<QUrl> &places);
+    QList<QUrl> loadPlacesForProfileDialog() const;
+    void showPlacesContextMenu(QFileDialog *dialog, const QPoint &pos);
 };
 
 #endif // MAINWINDOW_H

@@ -6,6 +6,20 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include "readmedialog.h"
+#include <QVBoxLayout>
+#include <QScreen>
+#include <QListView>
+#include <QImageReader>
+#include <QSplitter>
+#include <QMouseEvent>
+#include "customfiledialog.h"
+#include <QSettings>
+#include <QUrl>            // For QUrl operations
+#include <QMenu>           // For QMenu context menu
+#include <QAction>         // For QAction in the context menu
+#include <QModelIndex>     // For QModelIndex manipulation
+#include <QDebug>          // For qDebug debugging output
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), readmeDialog(new ReadmeDialog(this))
@@ -31,33 +45,144 @@ void MainWindow::on_actionShow_Readme_triggered()
 {
     readmeDialog->show();  // Display the readme dialog
 }
+
+void MainWindow::savePlacesForProfileDialog(const QList<QUrl> &places)
+{
+    QSettings settings("SetBack", "ProfilePlaces");
+    settings.beginGroup("Places");
+    settings.remove("");  // Clear existing entries
+
+    for (int i = 0; i < places.size(); ++i) {
+        settings.setValue(QString::number(i), places[i].toString());
+    }
+
+    settings.endGroup();
+}
+
+QList<QUrl> MainWindow::loadPlacesForProfileDialog() const
+{
+    QSettings settings("SetBack", "ProfilePlaces");
+    settings.beginGroup("Places");
+
+    QList<QUrl> places;
+    QStringList keys = settings.childKeys();
+    for (const QString &key : keys) {
+        places.append(QUrl(settings.value(key).toString()));
+    }
+
+    settings.endGroup();
+    return places.isEmpty() ? QList<QUrl>{QUrl::fromLocalFile(QDir::homePath())} : places;  // Default to Home
+}
+
+void MainWindow::showPlacesContextMenu(QFileDialog *dialog, const QPoint &pos)
+{
+    QMenu contextMenu(this);
+
+    // Get the current directory
+    QString currentDir = dialog->directory().absolutePath();
+
+    // Add "Save Current Directory" option
+    QAction *saveAction = contextMenu.addAction("Save Current Directory");
+    connect(saveAction, &QAction::triggered, this, [this, dialog, currentDir]() {
+        QList<QUrl> places = dialog->sidebarUrls();
+        QUrl newPlace = QUrl::fromLocalFile(currentDir);
+
+        if (!places.contains(newPlace)) {
+            places.append(newPlace);  // Add the new directory to Places
+            savePlacesForProfileDialog(places);  // Save to settings
+            dialog->setSidebarUrls(places);      // Update dialog
+        }
+    });
+
+    // Add "Remove Place" option if clicked on a Place
+    QAction *removeAction = contextMenu.addAction("Remove Place");
+    connect(removeAction, &QAction::triggered, this, [this, dialog, pos]() {
+        QList<QUrl> places = dialog->sidebarUrls();
+        for (int i = 0; i < places.size(); ++i) {
+            QRect rect = dialog->geometry();  // Placeholder for actual click detection
+            if (rect.contains(pos)) {  // Simulate detecting a clicked Place
+                QUrl placeToRemove = places.at(i);
+                places.removeOne(placeToRemove);
+                savePlacesForProfileDialog(places);
+                dialog->setSidebarUrls(places);
+                break;
+            }
+        }
+    });
+
+    contextMenu.exec(dialog->mapToGlobal(pos));
+    qDebug() << "Context menu triggered at position:" << pos;
+}
+
 // Slot for selecting the Firefox profile directory
 void MainWindow::on_selectProfileButton_clicked()
 {
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Firefox Profile Directory"),
-                                                    "/home/tom/snap/firefox/common/.mozilla/firefox",
-                                                    QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    if (!dir.isEmpty()) {
-        profilePath = dir;
-        ui->profilePathLineEdit->setText(profilePath); // Display the selected path in the UI
+    QFileDialog dialog(this, tr("Select Firefox Profile Directory"));
+    dialog.setFileMode(QFileDialog::Directory);
+    dialog.setOption(QFileDialog::ShowDirsOnly, true);  // Show directories only
+    dialog.setFilter(QDir::AllDirs | QDir::NoDot | QDir::Hidden);
+
+    dialog.resize(960, 540);
+
+    // Add custom Places
+    dialog.setSidebarUrls(loadPlacesForProfileDialog());
+
+    // Adjust Sidebar Width
+    QWidget *sidebar = dialog.findChild<QWidget *>("sidebar");
+    if (sidebar) {
+        sidebar->setMinimumWidth(200);  // Set minimum width to 175 pixels
+        qDebug() << "Sidebar width adjusted.";
+    }
+
+    // Add context menu for sidebar and file list
+    QListView *fileList = dialog.findChild<QListView *>();
+    if (sidebar) {
+        sidebar->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(sidebar, &QWidget::customContextMenuRequested, this, [&dialog, this](const QPoint &pos) {
+            showPlacesContextMenu(&dialog, pos);
+        });
+    }
+    if (fileList) {
+        fileList->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(fileList, &QWidget::customContextMenuRequested, this, [&dialog, this](const QPoint &pos) {
+            showPlacesContextMenu(&dialog, pos);
+        });
+    }
+
+    // Save Places when dialog finishes
+    connect(&dialog, &QDialog::finished, this, [&dialog, this]() {
+        QList<QUrl> currentPlaces = dialog.sidebarUrls();
+        savePlacesForProfileDialog(currentPlaces);
+    });
+
+    // Execute dialog and capture the selected directory
+    if (dialog.exec() == QDialog::Accepted) {
+        profilePath = dialog.selectedFiles().first();
+        ui->profilePathLineEdit->setText(profilePath);  // Update the UI
     }
 }
 
-// Slot for selecting the image
+
 void MainWindow::on_selectImageButton_clicked()
 {
-    QString file = QFileDialog::getOpenFileName(this, tr("Select Image"), "",
-                                                tr("Images (*.jpg *.jpeg *.png *.gif)"));
-    if (!file.isEmpty()) {
-        imagePath = file;
-        ui->imagePathLineEdit->setText(imagePath); // Display the selected image path in the UI
-        updateImagePreview(imagePath);  // Update the image preview
+    CustomFileDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        imagePath = dialog.getSelectedFilePath();  // Update the imagePath variable
+        ui->imagePathLineEdit->setText(imagePath);  // Update the UI
+        updateImagePreview(imagePath);  // Optional: Show the preview in the main window
+        qDebug() << "Image selected:" << imagePath;
+    } else {
+        qDebug() << "No image selected.";
     }
 }
 
 // Slot for applying the changes
 void MainWindow::on_applyChangesButton_clicked()
 {
+    qDebug() << "Applying changes...";
+    qDebug() << "Profile path:" << profilePath;
+    qDebug() << "Image path:" << imagePath;
+
     if (profilePath.isEmpty() || imagePath.isEmpty()) {
         QMessageBox::warning(this, "Error", "Please select both the profile directory and an image.");
         return;

@@ -1,13 +1,14 @@
-#include <QApplication>
-#include <QIcon>  // Include QIcon for setting the window icon
 #include "mainwindow.h"
+#include <QApplication>
+#include <QCoreApplication>
+#include <QDir>
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    // Set the plugin path explicitly
+    QCoreApplication::addLibraryPath("/usr/lib/x86_64-linux-gnu/qt6/plugins");  // Adjust path if different
 
-    // Set the application icon from the resource file
-    a.setWindowIcon(QIcon(":images/icon.png"));
+    QApplication a(argc, argv);
 
     MainWindow w;
     w.show();
