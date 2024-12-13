@@ -155,7 +155,11 @@ void CustomFileDialog::onFileDoubleClicked(const QModelIndex &index)
 
 QString CustomFileDialog::getSelectedFilePath() const
 {
+<<<<<<< HEAD
         return QDir::toNativeSeparators(selectedFilePath); // Ensures compatibility with OS paths
+=======
+    return selectedFilePath;
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
 }
 void CustomFileDialog::showPreviousImage()
 {

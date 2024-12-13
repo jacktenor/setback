@@ -30,12 +30,19 @@ private:
     ReadmeDialog *readmeDialog;     // Pointer to the readme dialog
     QString profilePath;            // Holds the selected profile path
     QString imagePath;              // Holds the selected image path
+<<<<<<< HEAD
     void createUserContentCss(const QString &profilePath, const QString &imagePath, int topSitesRows);
+=======
+    void createUserContentCss(const QString &profilePath, const QString &imagePath);
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
     void updateImagePreview(const QString &imagePath);  // Method to update the QLabel with the selected image
     void savePlacesForProfileDialog(const QList<QUrl> &places);
     QList<QUrl> loadPlacesForProfileDialog() const;
     void showPlacesContextMenu(QFileDialog *dialog, const QPoint &pos);
+<<<<<<< HEAD
     void setTopSitesRowsPreference(int topSitesRows); // Add this declaration
+=======
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
 };
 
 #endif // MAINWINDOW_H

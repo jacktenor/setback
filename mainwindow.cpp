@@ -19,7 +19,11 @@
 #include <QAction>         // For QAction in the context menu
 #include <QModelIndex>     // For QModelIndex manipulation
 #include <QDebug>          // For qDebug debugging output
+<<<<<<< HEAD
 #include <QRegularExpression>
+=======
+
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), readmeDialog(new ReadmeDialog(this))
@@ -33,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Connect the menu action for showing the readme
     connect(ui->actionShow_Readme, &QAction::triggered, this, &MainWindow::on_actionShow_Readme_triggered);
 }
+<<<<<<< HEAD
 void MainWindow::setTopSitesRowsPreference(int topSitesRows)
 {
     QString userJsFilePath = profilePath + "/user.js";
@@ -86,6 +91,8 @@ void MainWindow::setTopSitesRowsPreference(int topSitesRows)
 
     userJsFile.close();
 }
+=======
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
 
 MainWindow::~MainWindow()
 {
@@ -164,6 +171,10 @@ void MainWindow::showPlacesContextMenu(QFileDialog *dialog, const QPoint &pos)
     });
 
     contextMenu.exec(dialog->mapToGlobal(pos));
+<<<<<<< HEAD
+=======
+    qDebug() << "Context menu triggered at position:" << pos;
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
 }
 
 // Slot for selecting the Firefox profile directory
@@ -182,7 +193,12 @@ void MainWindow::on_selectProfileButton_clicked()
     // Adjust Sidebar Width
     QWidget *sidebar = dialog.findChild<QWidget *>("sidebar");
     if (sidebar) {
+<<<<<<< HEAD
         sidebar->setMinimumWidth(200);  // Set minimum width to 200 pixels
+=======
+        sidebar->setMinimumWidth(200);  // Set minimum width to 175 pixels
+        qDebug() << "Sidebar width adjusted.";
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
     }
 
     // Add context menu for sidebar and file list
@@ -213,34 +229,62 @@ void MainWindow::on_selectProfileButton_clicked()
     }
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
 void MainWindow::on_selectImageButton_clicked()
 {
     CustomFileDialog dialog(this);
     if (dialog.exec() == QDialog::Accepted) {
+<<<<<<< HEAD
         imagePath = dialog.getSelectedFilePath();
 
         ui->imagePathLineEdit->setText(imagePath); // Update the UI
         updateImagePreview(imagePath);            // Optional: Show the preview in the main window
+=======
+        imagePath = dialog.getSelectedFilePath();  // Update the imagePath variable
+        ui->imagePathLineEdit->setText(imagePath);  // Update the UI
+        updateImagePreview(imagePath);  // Optional: Show the preview in the main window
+        qDebug() << "Image selected:" << imagePath;
+    } else {
+        qDebug() << "No image selected.";
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
     }
 }
 
 // Slot for applying the changes
 void MainWindow::on_applyChangesButton_clicked()
 {
+<<<<<<< HEAD
     int topSitesRows = ui->rowSpinBox->value();  // Get the number of rows
+=======
+    qDebug() << "Applying changes...";
+    qDebug() << "Profile path:" << profilePath;
+    qDebug() << "Image path:" << imagePath;
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
 
     if (profilePath.isEmpty() || imagePath.isEmpty()) {
         QMessageBox::warning(this, "Error", "Please select both the profile directory and an image.");
         return;
     }
 
+<<<<<<< HEAD
     createUserContentCss(profilePath, imagePath, topSitesRows);
     setTopSitesRowsPreference(topSitesRows);  // Update user.js
+=======
+    createUserContentCss(profilePath, imagePath);
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
     ui->statusLabel->setText("Changes applied successfully! Restart Firefox.");
 }
 
 // Function to create the chrome directory, img folder, and userContent.css
+<<<<<<< HEAD
 void MainWindow::createUserContentCss(const QString &profilePath, const QString &imagePath, int topSitesRows)
+=======
+void MainWindow::createUserContentCss(const QString &profilePath, const QString &imagePath)
+
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
 {
     QString chromeDir = profilePath + "/chrome";
     QString imgDir = chromeDir + "/img";
@@ -262,7 +306,11 @@ void MainWindow::createUserContentCss(const QString &profilePath, const QString 
     // Path to userContent.css
     QString userContentCssPath = chromeDir + "/userContent.css";
 
+<<<<<<< HEAD
     // CSS content with customizable rows
+=======
+    // CSS content that works with the image in the img folder
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
     QString cssContent = QString(
                              "@-moz-document url(about:home), url(about:newtab), url(about:privatebrowsing) {\n"
                              "    .click-target-container *, .top-sites-list * {\n"
@@ -275,15 +323,23 @@ void MainWindow::createUserContentCss(const QString &profilePath, const QString 
                              "        position: fixed;\n"
                              "        top: 0;\n"
                              "        left: 0;\n"
+<<<<<<< HEAD
                              "        background: #f9a no-repeat url(\"img/%1\") center;\n"
+=======
+                             "        background: #f9a no-repeat url(img/%1) center;\n"
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
                              "        background-size: cover;\n"
                              "        width: 100vw;\n"
                              "        height: 100vh;\n"
                              "    }\n"
+<<<<<<< HEAD
                              "    .top-sites-list {\n"
                              "        grid-template-rows: repeat(%2, 1fr) !important;\n"
                              "    }\n"
                              "}").arg(imageName).arg(topSitesRows); // Wrap imageName in quotes
+=======
+                             "}").arg(imageName);
+>>>>>>> b5b14c40213d75d32f8c5550a1406a366c2a32d2
 
     // Write the CSS content to the userContent.css file
     QFile file(userContentCssPath);
